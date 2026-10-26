@@ -1,0 +1,24 @@
+# Secrets (actual environment settings)
+.env
+.env.*
+# Shareable template without secret values
+!.env.example
+
+# Installed dependencies
+.venv/
+node_modules/
+
+# Local databases (contain user data)
+*.sqlite3
+*.sqlite3-journal
+
+# Build / generated output
+dist/
+__pycache__/
+.pytest_cache/
+
+# Logs
+*.log
+
+# VS Code workspace for a different project (../crawling)
+crawling.code-workspace

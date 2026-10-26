@@ -1,0 +1,21 @@
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.status {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #f1f3f5;
+}
+
+.status-ok {
+  background: #e6f4ea;
+  color: #1e6b34;
+}
+
+.status-error {
+  background: #fdecea;
+  color: #a12622;
+}
