@@ -1,21 +1,151 @@
-.app {
+.layout {
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  background: #ffffff;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #212529;
+  text-decoration: none;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.menu a,
+.link-button {
+  color: #495057;
+  text-decoration: none;
+  font: inherit;
+}
+
+.menu a.active {
+  color: #1c64d6;
+  font-weight: 600;
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.content {
   max-width: 720px;
   margin: 0 auto;
-  padding: 48px 16px;
+  padding: 24px 16px;
 }
 
-.status {
-  padding: 12px 16px;
+.card {
+  padding: 24px;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.card.narrow {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.card h1 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  background: #f1f3f5;
+  font: inherit;
 }
 
-.status-ok {
+.field input[aria-invalid='true'] {
+  border-color: #c92a2a;
+}
+
+.field-error {
+  margin: 4px 0 0;
+  color: #c92a2a;
+  font-size: 0.9rem;
+}
+
+.primary {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #1c64d6;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.alert {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.alert-error {
+  background: #fdecea;
+  color: #a12622;
+}
+
+.alert-success {
   background: #e6f4ea;
   color: #1e6b34;
 }
 
-.status-error {
-  background: #fdecea;
-  color: #a12622;
+.muted {
+  color: #6c757d;
+}
+
+.account-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0 0 24px;
+}
+
+.account-info dt {
+  color: #6c757d;
+}
+
+.account-info dd {
+  margin: 0;
+  word-break: break-all;
 }

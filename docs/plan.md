@@ -275,6 +275,15 @@ buildlog/
 12. 로그인하지 않은 상태로 기록 화면에 들어가면 로그인 화면으로 보냅니다.
 13. 위쪽 메뉴의 기본 틀을 만듭니다 (로그아웃 버튼 포함).
 
+#### 진행 결과 (2026-10-26)
+
+- 서버 요청: `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`, `PATCH /api/users/me/nickname`.
+- 오류 응답 형식: `{"detail": {"message", "fields"}}`. 입력 조건 위반 422, 이메일·닉네임 중복 409, 로그인 실패·로그인 필요 401.
+- 로그인: JWT를 `buildlog_session` 쿠키(httpOnly, SameSite=Lax, Secure, 7일)에 저장. 쿠키는 항상 HTTPS 연결에서만 전송(2026-10-26 결정). 개발 중 `http://localhost`에서는 Chrome·Edge·Firefox만 로그인 가능하고 Safari는 불가.
+- 화면: react-router 8.5.0. 회원가입·로그인·홈(빈 틀)·계정 설정 화면, 위쪽 메뉴(홈·계정 설정·로그아웃), 로그인이 필요한 화면 보호.
+- 테스트: 서버 자동 테스트 67개 통과(Phase 2 포함). 화면 서버를 거친 실제 요청으로 가입→로그인→닉네임 변경→로그아웃 흐름 확인(임시 DB 사용, 개발용 DB 사용자 0명 유지). `npm run build`, `npm run lint` 통과.
+- 확인하지 못한 것: 브라우저에서 화면이 실제로 그려지는 모습(입력 유지·오류 표시·이동).
+
 #### 예상 변경 파일
 
 - `backend/app/routers/auth.py`

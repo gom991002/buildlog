@@ -39,6 +39,8 @@ Phase 0에서 확인한 현재 설치 상태입니다.
 
 - Phase 1에서 fastapi, uvicorn, pydantic-settings를 설치했습니다. 함께 설치된 주요 의존 패키지는 pydantic 2.14.1, starlette 1.10.0입니다.
 - Phase 2에서 sqlalchemy, alembic, pwdlib[argon2], pytest, httpx를 설치했습니다. 테스트 도구(pytest, httpx)도 같은 `requirements.txt`에 기록합니다.
+- Phase 3에서 pyjwt, email-validator(함께 설치: dnspython 2.9.0)와 화면의 react-router 8.5.0을 설치했습니다.
+- 테스트 실행 시 "`httpx`를 쓰는 starlette 테스트 도구는 곧 지원 중단, `httpx2`를 설치하라"는 경고가 나옵니다. 지금은 테스트가 정상 동작하며, 패키지 교체는 따로 결정합니다.
 - 비밀번호 저장은 FastAPI 공식 튜토리얼이 권장하는 pwdlib + Argon2를 사용합니다. passlib는 PyPI 최신 버전이 1.7.4에 머물러 있어 사용하지 않습니다.
 
 ### 화면 (JavaScript)
@@ -79,7 +81,6 @@ Phase 0에서 확인한 현재 설치 상태입니다.
 | `DATABASE_URL` | 데이터베이스 접속 주소 | `sqlite:///database/buildlog.sqlite3` (프로젝트 맨 위 폴더 기준. 서버 코드가 실행 위치와 상관없이 같은 파일을 찾도록 처리) |
 | `SECRET_KEY` | 로그인 증명(JWT)에 서명하는 비밀값 | 각자 컴퓨터에서 새로 만든 값 (아래 명령 참고) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 로그인 유지 시간(분) | `10080` (7일) |
-
 비밀값 만드는 명령 (Phase 1에서 사용):
 
 ```powershell
@@ -93,10 +94,11 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 | 항목 | 결정 |
 | --- | --- |
 | 방식 | 로그인에 성공하면 서버가 로그인 증명(JWT)을 만들어 쿠키로 보냄 |
-| 쿠키 설정 | 화면의 JavaScript가 읽을 수 없게(httpOnly), 다른 사이트에서 보낸 요청에는 실리지 않게(SameSite=Lax). 실제 서비스(HTTPS)에서는 암호화된 연결에서만 전송(Secure) |
+| 쿠키 설정 | 화면의 JavaScript가 읽을 수 없게(httpOnly), 다른 사이트에서 보낸 요청에는 실리지 않게(SameSite=Lax), 개발 환경을 포함해 항상 HTTPS 연결에서만 전송(Secure). 설정으로 끌 수 없음 (2026-10-26 결정) |
 | 유지 기간 | 7일 |
 | 로그아웃 | 서버가 쿠키를 지우고, 화면은 로그인 화면으로 이동 |
 
+- **개발 중 브라우저:** `http://localhost`는 HTTPS가 아니지만, Chrome·Edge·Firefox는 localhost를 안전한 주소로 보아 이 쿠키를 받습니다. **Safari는 받지 않아서 내 컴퓨터의 개발 환경에서는 Safari로 로그인할 수 없습니다.** Safari 확인은 HTTPS로 올린 뒤(Phase 12·14) 합니다.
 - **알아둘 점:** 이 방식은 서버에 로그인 기록을 저장하지 않습니다. 그래서 로그아웃하면 이 브라우저의 쿠키는 지워지지만, 쿠키가 다른 곳에 복사되었다면 그 사본은 유지 기간(7일)이 끝날 때까지 유효합니다.
 
 ## 6. 실행 명령

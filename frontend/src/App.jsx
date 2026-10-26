@@ -1,28 +1,30 @@
-import { useEffect, useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import './App.css'
+import { AuthProvider } from './auth/AuthContext.jsx'
+import RequireAuth from './auth/RequireAuth.jsx'
+import Layout from './components/Layout.jsx'
+import AccountSettingsPage from './pages/AccountSettingsPage.jsx'
+import HomePage from './pages/HomePage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
 
 function App() {
-  const [health, setHealth] = useState({ state: 'loading' })
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        return response.json()
-      })
-      .then((data) => setHealth({ state: 'ok', message: data.message }))
-      .catch(() => setHealth({ state: 'error' }))
-  }, [])
-
   return (
-    <main className="app">
-      <h1>BuildLog</h1>
-      <p className={`status status-${health.state}`}>
-        {health.state === 'loading' && '서버 상태를 확인하는 중입니다.'}
-        {health.state === 'ok' && health.message}
-        {health.state === 'error' && '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해 주세요.'}
-      </p>
-    </main>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/account" element={<AccountSettingsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

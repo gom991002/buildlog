@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, validates
 from app.db.base import Base
 
 NICKNAME_PATTERN = re.compile(r"^[가-힣A-Za-z0-9_]{2,20}$")
+NICKNAME_RULE = "닉네임은 2~20자의 한글, 영문, 숫자, 밑줄만 사용할 수 있습니다."
 
 
 def utc_now() -> datetime:
@@ -26,7 +27,7 @@ class User(Base):
     @validates("nickname")
     def _validate_nickname(self, _key: str, value: str) -> str:
         if not NICKNAME_PATTERN.fullmatch(value):
-            raise ValueError("닉네임은 2~20자의 한글, 영문, 숫자, 밑줄만 사용할 수 있습니다.")
+            raise ValueError(NICKNAME_RULE)
         return value
 
 
