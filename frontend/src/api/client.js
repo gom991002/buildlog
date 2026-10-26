@@ -11,6 +11,10 @@ export async function apiRequest(path, { method = 'GET', body } = {}) {
       body: body === undefined ? undefined : JSON.stringify(body),
     })
     const data = response.status === 204 ? null : await response.json().catch(() => null)
+    // 502-504 without our JSON body: the dev proxy (or a gateway) could not reach the API server.
+    if (response.status >= 502 && response.status <= 504 && data?.detail === undefined) {
+      return { ok: false, status: response.status, data: { detail: { message: NETWORK_ERROR } } }
+    }
     return { ok: response.ok, status: response.status, data }
   } catch {
     return { ok: false, status: 0, data: { detail: { message: NETWORK_ERROR } } }
