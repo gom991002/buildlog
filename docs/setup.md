@@ -38,6 +38,7 @@ Phase 0에서 확인한 현재 설치 상태입니다.
 | Supabase(PostgreSQL) 접속 | psycopg | 3.3.6 | 13 |
 
 - Phase 1에서 fastapi, uvicorn, pydantic-settings를 설치했습니다. 함께 설치된 주요 의존 패키지는 pydantic 2.14.1, starlette 1.10.0입니다.
+- Phase 2에서 sqlalchemy, alembic, pwdlib[argon2], pytest, httpx를 설치했습니다. 테스트 도구(pytest, httpx)도 같은 `requirements.txt`에 기록합니다.
 - 비밀번호 저장은 FastAPI 공식 튜토리얼이 권장하는 pwdlib + Argon2를 사용합니다. passlib는 PyPI 최신 버전이 1.7.4에 머물러 있어 사용하지 않습니다.
 
 ### 화면 (JavaScript)
@@ -136,16 +137,33 @@ npm run dev
 - 확인: 브라우저에서 `http://localhost:5173` → "BuildLog 서버가 동작 중입니다."
 - 서버가 꺼져 있으면 "서버에 연결할 수 없습니다" 안내가 보입니다.
 
-### 데이터베이스 변경 이력 적용 (Phase 2 이후, 예정)
+### 데이터베이스 변경 이력 적용 (Phase 2부터 동작 확인됨)
+
+처음 설치했을 때와, 다른 사람이 만든 새 변경 이력을 받았을 때 실행합니다. `database/buildlog.sqlite3`가 없으면 새로 만듭니다.
 
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe -m alembic upgrade head
 ```
 
-### 서버 자동 테스트 (Phase 2 이후, 예정)
+테이블 구조를 바꾼 뒤 새 변경 이력 파일을 만들 때:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m alembic revision --autogenerate -m "변경 내용"
+```
+
+- 만들어진 파일은 반드시 열어서 확인합니다. SQLite에서는 대소문자 무시 인덱스 같은 "식 기반 인덱스"를 자동으로 찾지 못해 직접 추가해야 합니다.
+
+### 서버 자동 테스트 (Phase 2부터 동작 확인됨)
 
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe -m pytest
 ```
+
+- 테스트는 매번 임시 데이터베이스를 새로 만들어 실행하므로 개발용 데이터베이스를 바꾸지 않습니다.
+
+### VS Code에서 Python 경고가 보일 때
+
+VS Code가 `backend\.venv`가 아닌 다른 Python을 쓰고 있으면 "패키지가 설치되어 있지 않습니다" 같은 표시가 나옵니다. `Ctrl+Shift+P` → "Python: Select Interpreter" → `backend\.venv\Scripts\python.exe`를 선택합니다.
