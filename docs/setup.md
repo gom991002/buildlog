@@ -36,12 +36,17 @@ Phase 0에서 확인한 현재 설치 상태입니다.
 | 서버 자동 테스트 | pytest | 9.1.1 | 2 |
 | 테스트용 요청 보내기 | httpx | 0.28.1 | 2 |
 | Supabase(PostgreSQL) 접속 | psycopg | 3.3.6 | 13 |
+| 파일 업로드(multipart) 읽기 | python-multipart | 0.0.32 | 학습 자료함 |
+| AI 요약(OpenAI 호출) | openai | 3.39.0 | 학습 자료함 |
+| 영상에서 장면 뽑기 (ffmpeg 포함, 따로 설치 불필요) | av | 19.0.2 | 학습 자료함 |
+| 이미지 줄이기·JPEG 변환 | pillow | 13.0.0 | 학습 자료함 |
 
 - Phase 1에서 fastapi, uvicorn, pydantic-settings를 설치했습니다. 함께 설치된 주요 의존 패키지는 pydantic 2.14.1, starlette 1.10.0입니다.
 - Phase 2에서 sqlalchemy, alembic, pwdlib[argon2], pytest, httpx를 설치했습니다. 테스트 도구(pytest, httpx)도 같은 `requirements.txt`에 기록합니다.
 - Phase 3에서 pyjwt, email-validator(함께 설치: dnspython 2.9.0)와 화면의 react-router 8.5.0을 설치했습니다.
 - 테스트 실행 시 "`httpx`를 쓰는 starlette 테스트 도구는 곧 지원 중단, `httpx2`를 설치하라"는 경고가 나옵니다. 지금은 테스트가 정상 동작하며, 패키지 교체는 따로 결정합니다.
 - 비밀번호 저장은 FastAPI 공식 튜토리얼이 권장하는 pwdlib + Argon2를 사용합니다. passlib는 PyPI 최신 버전이 1.7.4에 머물러 있어 사용하지 않습니다.
+- 2026-10-27 학습 자료함에서 python-multipart, openai(함께 설치: httpx2 2.16.0), av, pillow를 설치했습니다. 추가 이유는 [plan.md](plan.md) 10장.
 
 ### 화면 (JavaScript)
 
@@ -78,16 +83,21 @@ Phase 0에서 확인한 현재 설치 상태입니다.
 
 | 이름 | 뜻 | 개발용 값 예시 |
 | --- | --- | --- |
-| `DATABASE_URL` | 데이터베이스 접속 주소 | `sqlite:///database/buildlog.sqlite3` (프로젝트 맨 위 폴더 기준. 서버 코드가 실행 위치와 상관없이 같은 파일을 찾도록 처리) |
+| `DATABASE_URL` | 데이터베이스 접속 주소 | Supabase **Session pooler** 주소 (`postgresql://`로 시작). 2026-10-27부터 서버와 Alembic은 SQLite 주소를 받지 않음 |
 | `SECRET_KEY` | 로그인 증명(JWT)에 서명하는 비밀값 | 각자 컴퓨터에서 새로 만든 값 (아래 명령 참고) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 로그인 유지 시간(분) | `10080` (7일) |
+| `OPENAI_API_KEY` | 학습 자료 AI 요약용 OpenAI 키. 비워두면 요약만 꺼지고 업로드는 동작 | OpenAI에서 발급한 키 |
+| `OPENAI_MODEL` | (선택) 요약 모델 | 기본 `gpt-5.4-nano` |
+| `UPLOAD_DIR` | (선택) 업로드 파일 저장 폴더 | 기본 `backend/uploads` (Git 제외) |
 비밀값 만드는 명령 (Phase 1에서 사용):
 
 ```powershell
 python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-- Phase 13에서 Supabase로 바꿀 때는 `DATABASE_URL`만 Supabase 접속 주소로 바꿉니다. Supabase 접속 정보는 `.env`에만 넣고 채팅, 코드, 문서에 적지 않습니다.
+- 2026-10-27 결정: 데이터는 Supabase에만 저장합니다. `DATABASE_URL`에 SQLite 주소를 넣으면 서버와 Alembic이 시작하지 않습니다. 기존 `database/buildlog.sqlite3`는 지우지 않았고 옮기지도 않았습니다.
+- 자동 테스트는 지금처럼 테스트마다 임시 SQLite 파일을 만들어 실행하며 Supabase에 접속하지 않습니다.
+- Supabase 접속 정보는 `.env`에만 넣고 채팅, 코드, 문서에 적지 않습니다.
 
 ## 5. 로그인 유지 방식
 

@@ -22,3 +22,6 @@ __pycache__/
 
 # VS Code workspace for a different project (../crawling)
 crawling.code-workspace
+
+# Uploaded learning materials (private user files)
+backend/uploads/

@@ -9,8 +9,20 @@ from app.core.config import PROJECT_ROOT, settings
 
 
 def resolve_database_url(url: str) -> str:
-    """Make a relative SQLite path point inside the project root, wherever the server is started."""
+    """Make a relative SQLite path point inside the project root, wherever the server is started.
+
+    A Supabase (PostgreSQL) URL is pointed at the installed psycopg driver and required to use SSL.
+    """
+    if "YOUR-PASSWORD" in url.upper():
+        raise ValueError(".env의 DATABASE_URL에서 [YOUR-PASSWORD]를 실제 데이터베이스 비밀번호로 바꿔주세요.")
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url.removeprefix("postgres://")
     parsed = make_url(url)
+    if parsed.get_backend_name() == "postgresql":
+        parsed = parsed.set(drivername="postgresql+psycopg")
+        if "sslmode" not in parsed.query:
+            parsed = parsed.update_query_dict({"sslmode": "require"})
+        return parsed.render_as_string(hide_password=False)
     if parsed.get_backend_name() != "sqlite" or parsed.database in (None, "", ":memory:"):
         return url
     path = Path(parsed.database)

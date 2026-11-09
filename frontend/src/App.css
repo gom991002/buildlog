@@ -149,3 +149,178 @@
   margin: 0;
   word-break: break-all;
 }
+
+/* Logged-in layout: sidebar from the Figma dashboard (node 2:12). */
+
+.app-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: #f5f6f8;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 224px;
+  height: 100vh;
+  padding: 24px;
+  background: #ffffff;
+}
+
+.sidebar p {
+  margin: 0;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 88px;
+  color: #191f28;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 33px;
+  text-decoration: none;
+}
+
+.sidebar-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #3182f6;
+  color: #ffffff;
+  font-size: 23px;
+  line-height: 35px;
+}
+
+.sidebar .sidebar-label {
+  margin-bottom: 20px;
+  color: #6b7684;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 50px;
+  padding: 14px;
+  border-radius: 12px;
+  color: #6b7684;
+  font-size: 15px;
+  line-height: 23px;
+  text-decoration: none;
+}
+
+.sidebar-menu a.active {
+  background: #eaf3ff;
+  color: #3182f6;
+  font-weight: 700;
+}
+
+.sidebar-icon {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 29px;
+}
+
+.sidebar-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid #eef0f3;
+}
+
+.sidebar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 19px;
+  background: #eaf3ff;
+  color: #3182f6;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 23px;
+}
+
+.sidebar-account-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sidebar-account-label strong {
+  overflow: hidden;
+  color: #191f28;
+  font-size: 14px;
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account-label a {
+  color: #6b7684;
+  font-size: 12px;
+  line-height: 18px;
+  text-decoration: none;
+}
+
+.sidebar-account-label a.active {
+  color: #3182f6;
+  font-weight: 700;
+}
+
+/* Not in the Figma frame; PRD requires a logout menu. */
+.sidebar-logout {
+  align-self: flex-start;
+  margin-top: 12px;
+  color: #6b7684;
+  font-size: 12px;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding: 48px;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+  }
+
+  .sidebar-brand {
+    height: auto;
+    margin-bottom: 16px;
+  }
+
+  .sidebar-account {
+    margin-top: 16px;
+  }
+
+  .app-main {
+    padding: 24px 16px;
+  }
+}

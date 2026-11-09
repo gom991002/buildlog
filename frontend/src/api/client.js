@@ -2,13 +2,15 @@ const NETWORK_ERROR = '서버에 연결할 수 없습니다. 잠시 후 다시 �
 
 // Every call resolves to { ok, status, data } and never throws, so screens handle one shape.
 // Server errors arrive as data.detail = { message, fields? }.
+// A FormData body (file upload) is sent as-is so the browser sets the multipart header.
 export async function apiRequest(path, { method = 'GET', body } = {}) {
+  const isJson = body !== undefined && !(body instanceof FormData)
   try {
     const response = await fetch(path, {
       method,
       credentials: 'same-origin',
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: isJson ? { 'Content-Type': 'application/json' } : undefined,
+      body: isJson ? JSON.stringify(body) : body,
     })
     const data = response.status === 204 ? null : await response.json().catch(() => null)
     // 502-504 without our JSON body: the dev proxy (or a gateway) could not reach the API server.

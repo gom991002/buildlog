@@ -1,0 +1,85 @@
+/* Values from the Figma dashboard (node 2:12). */
+
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1120px;
+}
+
+.home h1,
+.home h2,
+.home p {
+  margin: 0;
+}
+
+.home-eyebrow {
+  color: #6b7684;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.home-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-greeting h1 {
+  color: #191f28;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 48px;
+  word-break: keep-all;
+}
+
+.home-greeting p {
+  color: #6b7684;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 656fr) minmax(0, 440fr);
+  gap: 24px;
+}
+
+.home-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-height: 200px;
+  padding: 28px;
+  border-radius: 24px;
+  background: #ffffff;
+}
+
+/* Not in the Figma frame; spec 2.4 asks for it, so it spans the row under the other two. */
+.home-panel-errors {
+  grid-column: 1 / -1;
+}
+
+.home-panel h2 {
+  color: #191f28;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.home-empty {
+  color: #6b7684;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+@media (max-width: 900px) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-greeting h1 {
+    font-size: 26px;
+    line-height: 38px;
+  }
+}

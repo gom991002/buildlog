@@ -18,6 +18,10 @@ target_metadata = Base.metadata
 # Tests pass their own temporary database through config.attributes.
 database_url = resolve_database_url(config.attributes.get("database_url", settings.database_url))
 
+# The Supabase database is shared with another project whose history is in "alembic_version",
+# so BuildLog records its own history in a separate table.
+VERSION_TABLE = "buildlog_alembic_version"
+
 
 def run_migrations_offline() -> None:
     context.configure(
@@ -26,6 +30,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=True,
+        version_table=VERSION_TABLE,
     )
 
     with context.begin_transaction():
@@ -41,6 +46,7 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             # SQLite cannot ALTER most things in place; batch mode recreates tables safely.
             render_as_batch=True,
+            version_table=VERSION_TABLE,
         )
 
         with context.begin_transaction():

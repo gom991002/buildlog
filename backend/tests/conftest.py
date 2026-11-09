@@ -1,5 +1,12 @@
+import os
 from collections.abc import Iterator
 from pathlib import Path
+
+# Tests never touch Supabase: each test builds its own temporary SQLite file below.
+# This placeholder only satisfies the settings check; nothing ever connects to it.
+os.environ["DATABASE_URL"] = "postgresql://tests:unused@localhost:5432/unused"
+# Tests never call OpenAI, even when .env has a real key; AI tests replace the call itself.
+os.environ["OPENAI_API_KEY"] = ""
 
 import pytest
 from alembic import command
@@ -8,10 +15,19 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.config import settings
 from app.db.session import build_engine, get_db
 from app.main import app
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(autouse=True)
+def upload_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    # Uploaded files go to a temporary folder, never to backend/uploads.
+    folder = tmp_path / "uploads"
+    monkeypatch.setattr(settings, "upload_dir", folder)
+    return folder
 
 
 def migrate(url: str) -> None:

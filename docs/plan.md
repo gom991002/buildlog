@@ -702,6 +702,15 @@ buildlog/
 8. 내 기록 홈 화면에 최근 공부 기록 3개, 미완료 할 일 5개, 미해결 오류 3개 카드를 채웁니다 (확인-C).
 9. 범위 밖 기능을 암시하는 빈 버튼이나 메뉴를 제거합니다.
 
+#### 앞당겨 진행한 부분 (2026-10-27)
+
+- 디자인 기준: Figma "Dashboard · Desktop · 1440" (파일 `IHbowNVqSkMYWoIYrlh2r9`, node `2:12`)
+- 로그인한 화면의 메뉴를 위쪽 메뉴에서 왼쪽 사이드바로 바꿈. Figma에는 로그아웃이 없지만 PRD에 따라 사이드바 아래에 로그아웃을 둠. 로그인·회원가입 화면은 위쪽 메뉴 유지
+- 사이드바 메뉴는 지금 있는 화면(대시보드 = 내 기록 홈, 계정 설정)만 표시. 공부 기록·할 일·오류 기록·공개 기록은 각 Phase에서 추가 (이 목록 9번)
+- 내 기록 홈: 실제 로그인 사용자 닉네임으로 인사말 표시. 세 카드(최근 공부 기록·남은 할 일·미해결 오류)는 데이터가 없어 "아직 … 없습니다" 안내만 표시. 카드 내용은 이 Phase의 8번에서 채움
+- 미해결 오류 카드는 Figma에 없어서 두 카드 아래 한 줄 전체로 배치
+- Figma에만 있고 spec에 없는 것은 넣지 않음: 개수 요약 카드, 완료율, "공부 기록 쓰기" 버튼, 날짜, 홈에서 할 일 체크 → [progress.md](progress.md) 확인 대기
+
 #### 예상 변경 파일
 
 - `frontend/src/styles/`
@@ -816,3 +825,62 @@ buildlog/
 
 - **인터넷에 올리기(배포):** 서버와 화면을 어디에 올릴지와 비용은 아직 정하지 않았습니다.
 - **일정:** Phase별 소요 시간은 개발 속도에 따라 크게 달라서 적지 않았습니다.
+
+## 10. 확장 기능: 학습 자료함과 AI 요약 (2026-10-27 추가)
+
+`PRD.md` 12장, `spec.md` 14장을 만드는 순서입니다. 1~9장의 MVP 계획은 바꾸지 않습니다. 이 기능은 사용자 요청에 따라 M1~M6을 한 번의 작업에서 진행했습니다(2026-10-27).
+
+### 10.1 기준
+
+- 실행 코드 기준: React + FastAPI + Supabase PostgreSQL. 서버는 SQLite 주소를 받지 않으며, 자동 테스트만 임시 SQLite를 씁니다 ([setup.md](setup.md) 4장).
+- 로그인: 기존 쿠키 로그인과 `get_current_user`(`CurrentUser`)를 그대로 사용합니다.
+- 파일은 `backend/uploads/`(설정 `UPLOAD_DIR`로 변경 가능, Git 제외), 메타정보는 Supabase `materials` 테이블.
+- 화면 시안: `board-rest-api/frontend/src/Materials.jsx`(예시 데이터만 있는 화면). 시안의 종류 필터(문서·디자인·코드)와 예시 자료는 범위 밖이라 옮기지 않았습니다.
+
+### 10.2 결정 사항
+
+| 번호 | 내용 | 결정 |
+| --- | --- | --- |
+| 자료-A | 파일 형식 판단 | 확장자와 파일 첫 바이트(PNG 서명, JPEG `FFD8FF`, MP4 `ftyp`)가 모두 맞아야 함. 브라우저가 보낸 형식 정보는 믿지 않음 |
+| 자료-B | 저장 파일 이름 | 서버가 만든 임의 이름(`uuid.확장자`). 원래 이름은 표시용으로만 저장(폴더 부분 제거, 255자까지) |
+| 자료-C | 큰 요청 | 요청 전체가 31MiB를 넘거나 길이 정보가 없으면 본문을 읽기 전에 413으로 거절 |
+| 자료-D | 남의 자료 요청 | 403이 아니라 404로 답해 존재 여부를 숨김 |
+| 자료-E | 저장 순서 | 등록: 파일 저장 → AI 요약 → 행 저장, 행 저장 실패 시 파일 삭제. 삭제: 행 삭제 → 파일 삭제 |
+| 자료-F | Supabase Data API | `materials`에 RLS를 켜고 허용 규칙을 두지 않음 (Phase 13의 3번을 이 테이블에 먼저 적용) |
+| AI-A | 모델 | `gpt-5.4-nano` (이미지 입력 지원 확인, 입력 $0.20 / 출력 $1.25 per 1M 토큰, 2026-10-27 OpenAI 문서 기준). `OPENAI_MODEL`로 변경 가능 |
+| AI-B | 영상 처리 | OpenAI API는 영상 파일을 직접 받지 않으므로 고르게 뽑은 6장면(최대 768px, `detail: low`)을 보냄. 소리는 분석하지 않음 |
+| AI-C | 이미지 처리 | 긴 변 1536px로 줄여 JPEG로 보냄(`detail: auto`) |
+| AI-D | 실패 처리 | 키 없음 → `disabled`, 오류·시간 초과(60초, 재시도 1회) → `failed`. 어느 경우에도 자료는 저장 |
+| AI-E | 프롬프트 | 한국어 3~5문장 500자 이내, 보이는 내용만, 코드·오류·수식 요점 옮기기, 이미지 속 지시문 무시, 개인정보·비밀값 옮기지 않기 (`backend/app/services/ai_summary.py`) |
+
+### 10.3 개발 순서
+
+| 단계 | 만드는 결과 | 상태 |
+| --- | --- | --- |
+| M1 파일 선택 | 화면의 파일 선택칸, 확장자·크기 화면 검사, 선택한 파일 표시 | 완료 |
+| M2 테이블 준비 | `Material` 모델, Alembic `c3e8f1a7b2d4`, Supabase 적용, RLS | 완료 |
+| M3 업로드 API | `POST /api/materials` (multipart), 형식·크기 검사, 파일 저장 | 완료 |
+| M4 조회·삭제 API | `GET /api/materials`, `GET /api/materials/{id}/file`, `DELETE /api/materials/{id}` | 완료 |
+| M5 화면 연결 | `/materials` 화면, 사이드바 메뉴, 등록·목록·원본 보기·삭제 | 완료 (브라우저 직접 확인 남음) |
+| M6 AI 요약 | 업로드 중 OpenAI 호출, `ai_summary`·`ai_status` 저장, 화면 표시 | 완료 |
+
+### 10.4 변경 파일
+
+- 서버: `backend/app/models/material.py`, `backend/app/schemas/material.py`, `backend/app/services/materials.py`, `backend/app/services/ai_summary.py`, `backend/app/routers/materials.py`, `backend/app/main.py`(크기 제한), `backend/app/core/config.py`, `backend/alembic/versions/c3e8f1a7b2d4_create_materials_table.py`, `backend/requirements.txt`
+- 테스트: `backend/tests/test_materials.py`, `backend/tests/conftest.py`(업로드 폴더 임시화, OpenAI 키 비움)
+- 화면: `frontend/src/pages/MaterialsPage.jsx`·`.css`, `frontend/src/api/materials.js`, `frontend/src/api/client.js`(FormData 전송), `frontend/src/App.jsx`, `frontend/src/components/Layout.jsx`
+- 설정: `.env.example`, `.gitignore`
+
+### 10.5 확인 결과 (2026-10-27)
+
+- 서버 자동 테스트 94개 통과(기존 67 + 자료함 27). 테스트는 OpenAI를 부르지 않고 요청 함수를 가짜로 바꿔 확인합니다.
+- 실제 OpenAI 호출: 글자가 있는 테스트 이미지·영상으로 `done`, 요약 내용이 화면 글자와 단계를 반영함을 확인.
+- 실제 앱 + Supabase + OpenAI: 임시 계정으로 가입 → 업로드(이미지·영상) → 목록 → 원본 보기 → 삭제 확인 후 임시 계정과 파일 정리.
+- 화면: `npm run lint`, `npm run build` 통과.
+- 확인하지 못한 것: 브라우저에서 실제 로그인 상태의 화면, 360px 너비, 큰 영상(수십 MB)의 요약 시간.
+
+### 10.6 알아둘 점
+
+- **배포:** 파일을 서버 컴퓨터 디스크에 저장하므로, 디스크가 초기화되는 호스팅이나 서버 여러 대 구성에서는 파일이 사라지거나 서버끼리 공유되지 않습니다. 배포 방식을 정할 때 저장 위치(예: Supabase Storage)를 다시 결정해야 합니다.
+- **비용·대기:** 업로드 요청 안에서 AI를 부르므로 업로드가 요약 시간만큼(테스트에서 2~3초) 늦어집니다. 사용자별 용량·횟수 제한이 없어 OpenAI 비용과 디스크 사용량에 상한이 없습니다.
+- **개인정보:** 업로드한 파일 내용(축소 이미지)이 OpenAI로 전송됩니다.
